@@ -141,6 +141,13 @@ app.post("/api/index/url", async (req, res) => {
       const loader = new CheerioWebBaseLoader(url);
       docs = await loader.load();
     }
+    // Debug: log raw HTML length if available
+    if (docs && docs.length > 0) {
+      const firstDoc = docs[0];
+      if (firstDoc && typeof firstDoc.pageContent === "string") {
+        console.log("🐞 Raw HTML length:", firstDoc.pageContent.length);
+      }
+    }
 
     // Guard against excessive token usage by limiting and truncating documents
     const withSources = docs.map((d) => {
@@ -195,12 +202,23 @@ app.post("/api/index/url", async (req, res) => {
       splitDocs.push(...docs);
     }
 
-    // Guard clause: if no content extracted, return 400
+    // Guard clause: if no content extracted, return 400, with debug info
     if (splitDocs.length === 0) {
       console.log("⚠️ No content extracted from URL:", url);
+      console.log(
+        "🛠 Raw docs:",
+        filtered.map((d) => ({
+          meta: d.metadata,
+          contentPreview: (d.pageContent || "").slice(0, 200),
+        }))
+      );
       return res.status(400).json({
         error: "No usable content extracted from the provided URL.",
         url,
+        debug: {
+          loadedDocs: docs.length,
+          nonEmpty: filtered.length,
+        },
       });
     }
 
