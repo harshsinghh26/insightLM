@@ -149,15 +149,20 @@ app.post("/api/index/url", async (req, res) => {
       return d;
     });
 
+    console.log("🔗 Loaded docs:", docs.length);
+
     let filtered = withSources.filter(
       (d) => (d?.pageContent || "").trim().length > 0
     );
+    console.log("📄 Non-empty docs:", filtered.length);
+
     const anyInclude = filtered.some((d) => {
       const src = (d.metadata?.source_url || d.metadata?.source || url)
         .toString()
         .toLowerCase();
       return WEB_INCLUDE.some((p) => src.includes(p));
     });
+
     if (anyInclude) {
       filtered = filtered.filter((d) => {
         const src = (d.metadata?.source_url || d.metadata?.source || url)
@@ -165,6 +170,9 @@ app.post("/api/index/url", async (req, res) => {
           .toLowerCase();
         return WEB_INCLUDE.some((p) => src.includes(p));
       });
+      console.log("✅ After include filtering:", filtered.length);
+    } else {
+      console.log("⚠️ No include keywords matched, keeping all docs.");
     }
 
     const cleaned = filtered.slice(0, WEB_MAX_DOCS).map(
