@@ -20,21 +20,14 @@ export function SourcesPanel({ onAddSource, sources }: SourcesPanelProps) {
             <Plus className="h-4 w-4" />
             Add
           </Button>
-          <Button
-            variant="outline"
-            className="w-full justify-start gap-3 border-border hover:bg-surface-hover"
-            size="sm"
-          >
-            <Search className="h-4 w-4" />
-            Discover
-          </Button>
+          {/* Discover button removed per request */}
         </div>
       </div>
 
       <div className="flex-1 p-6">
         {sources.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-lg bg-muted flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-lg glass flex items-center justify-center">
               <FileText className="h-8 w-8 text-muted-foreground" />
             </div>
             <p className="text-sm text-muted-foreground mb-2">
@@ -49,7 +42,7 @@ export function SourcesPanel({ onAddSource, sources }: SourcesPanelProps) {
             {sources.map((source, index) => (
               <div
                 key={index}
-                className="p-3 border border-border rounded-lg bg-surface hover:bg-surface-hover transition-colors cursor-pointer"
+                className="p-3 border border-border rounded-lg glass transition-colors cursor-pointer hover:brightness-110 hover:saturate-100"
               >
                 <div className="flex items-start gap-3">
                   <FileText className="h-4 w-4 text-primary mt-1 flex-shrink-0" />

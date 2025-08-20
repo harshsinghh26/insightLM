@@ -1,10 +1,33 @@
 import { FileText } from "lucide-react";
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import { summarizeStream } from "@/lib/api";
 
 interface StudioPanelProps {
   sources: any[];
+  assistantText?: string;
 }
 
-export function StudioPanel({ sources }: StudioPanelProps) {
+export function StudioPanel({ sources, assistantText }: StudioPanelProps) {
+  const [summary, setSummary] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSummarize = async () => {
+    if (loading) return;
+    setSummary("");
+    setLoading(true);
+    try {
+      const input = (assistantText && assistantText.trim().length > 0)
+        ? `Summarize the following content in 5-8 bullet points with a short heading. Do not repeat the original text; only provide a concise summary.\n\n${assistantText}`
+        : "No assistant response yet. Provide a placeholder summary of the last result in 2-3 bullets.";
+      await summarizeStream(input, (t) => {
+        setSummary((s) => s + t);
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="w-80 glass-panel glass-border border-l flex flex-col h-full">
       <div className="p-6 glass-border border-b">
@@ -16,7 +39,7 @@ export function StudioPanel({ sources }: StudioPanelProps) {
 
       <div className="flex-1 p-6">
         <div className="space-y-4">
-          <div className={`p-4 glass glass-hover rounded-lg transition-all ${
+          <button onClick={handleSummarize} className={`w-full text-left p-4 glass glass-hover rounded-lg transition-all ${
             sources.length === 0
               ? 'opacity-50 cursor-not-allowed'
               : 'cursor-pointer'
@@ -38,20 +61,23 @@ export function StudioPanel({ sources }: StudioPanelProps) {
                   Text Summary
                 </h3>
                 <p className="text-xs text-text-subtle">
-                  AI-generated text analysis
+                  Click to generate a streaming summary
                 </p>
               </div>
             </div>
-          </div>
+          </button>
         </div>
 
-        <div className="mt-8 p-4 glass rounded-lg">
-          <p className="text-sm text-center text-text-subtle">
-            Text output will appear here.
-          </p>
-          <p className="text-xs text-center text-text-subtle mt-2">
-            After adding sources, generate text summaries and insights!
-          </p>
+        <div className="mt-8 p-4 glass rounded-lg min-h-[120px] max-h-[40vh] overflow-auto">
+          {summary ? (
+            <div className="prose prose-invert prose-sm max-w-none">
+              <ReactMarkdown rehypePlugins={[rehypeHighlight]}>{summary}</ReactMarkdown>
+            </div>
+          ) : (
+            <p className="text-sm text-center text-text-subtle">
+              {loading ? "Summarizing..." : "Text output will appear here."}
+            </p>
+          )}
         </div>
       </div>
     </div>

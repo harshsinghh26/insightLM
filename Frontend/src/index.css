@@ -2,6 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Markdown and code styling overrides */
+.prose pre {
+  @apply rounded-lg border border-border bg-[#0b0b0e] overflow-auto;
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem; /* reserve space for copy btn */
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  max-width: 100%;
+}
+.prose code {
+  @apply font-mono text-xs;
+}
+.prose pre code {
+  @apply grid;
+}
+.prose {
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.prose table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+.copy-button {
+  @apply absolute top-2 right-2 text-xs px-2 py-1 rounded-md border border-border bg-black/50 text-foreground;
+}
+.copy-button:hover {
+  @apply bg-black/70 text-foreground;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -47,18 +78,33 @@ All colors MUST be HSL.
     --surface-pressed: 0 0% 100%;
     --text-subtle: 240 5% 64.9%;
     --divider: 0 0% 100%;
-    
+
     /* Glass gradients with high transparency */
-    --gradient-primary: linear-gradient(135deg, hsla(217.2, 91.2%, 59.8%, 0.6), hsla(217.2, 91.2%, 70%, 0.4));
-    --gradient-surface: linear-gradient(180deg, hsla(0, 0%, 0%, 0.4), hsla(0, 0%, 0%, 0.2));
-    --gradient-glass: linear-gradient(135deg, hsla(0, 0%, 0%, 0.5), hsla(0, 0%, 100%, 0.1));
-    
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsla(217.2, 91.2%, 59.8%, 0.6),
+      hsla(217.2, 91.2%, 70%, 0.4)
+    );
+    --gradient-surface: linear-gradient(
+      180deg,
+      hsla(0, 0%, 0%, 0.4),
+      hsla(0, 0%, 0%, 0.2)
+    );
+    --gradient-glass: linear-gradient(
+      135deg,
+      hsla(0, 0%, 0%, 0.5),
+      hsla(0, 0%, 100%, 0.1)
+    );
+
     /* Glass shadows with strong blur */
-    --shadow-soft: 0 1px 3px 0 hsla(0, 0%, 0%, 0.5), 0 1px 2px -1px hsla(0, 0%, 0%, 0.4);
-    --shadow-medium: 0 4px 6px -1px hsla(0, 0%, 0%, 0.5), 0 2px 4px -2px hsla(0, 0%, 0%, 0.4);
-    --shadow-large: 0 10px 15px -3px hsla(0, 0%, 0%, 0.6), 0 4px 6px -4px hsla(0, 0%, 0%, 0.5);
+    --shadow-soft: 0 1px 3px 0 hsla(0, 0%, 0%, 0.5),
+      0 1px 2px -1px hsla(0, 0%, 0%, 0.4);
+    --shadow-medium: 0 4px 6px -1px hsla(0, 0%, 0%, 0.5),
+      0 2px 4px -2px hsla(0, 0%, 0%, 0.4);
+    --shadow-large: 0 10px 15px -3px hsla(0, 0%, 0%, 0.6),
+      0 4px 6px -4px hsla(0, 0%, 0%, 0.5);
     --shadow-glass: 0 8px 32px 0 hsla(217.2, 91.2%, 59.8%, 0.3);
-    
+
     /* Smooth transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
