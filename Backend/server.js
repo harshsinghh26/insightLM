@@ -50,6 +50,19 @@ app.get("/", (req, res) => {
 const getEmbeddings = () =>
   new OpenAIEmbeddings({ model: "text-embedding-3-large" });
 
+function formatContext(docs) {
+  return (docs || []).map((d, i) => ({
+    index: i,
+    source_url:
+      (d && d.metadata && (d.metadata.source_url || d.metadata.source)) || null,
+    page:
+      (d && d.metadata && d.metadata.loc && d.metadata.loc.pageNumber) ||
+      (d && d.metadata && d.metadata.pageNumber) ||
+      null,
+    snippet: ((d && d.pageContent) || "").slice(0, 800),
+  }));
+}
+
 async function upsertDocuments(collectionName, documents) {
   const embeddings = getEmbeddings();
   await QdrantVectorStore.fromDocuments(documents, embeddings, {
@@ -218,9 +231,24 @@ app.post("/api/chat", async (req, res) => {
     console.log("📄 PDF Chunks:", relevantChunk);
     console.log("🌍 Web Chunks:", relevantWebChunk);
 
-    const SYSTEM_PROMPT = `You are an AI assistant. Prefer to answer using the provided context (uploaded PDFs and the indexed URLs). If the context does not contain the answer, you may still use your general knowledge, but clearly state when the information is not from the uploaded sources. Include page numbers or source URLs when available.\n\nRespond in clean, well-structured Markdown with clear headings, bullet lists, and fenced code blocks.\n\nContext:\n${JSON.stringify(
-      relevantChunk
-    )}\n${JSON.stringify(relevantWebChunk)}`;
+    const contextDocs = formatContext(relevantChunk);
+    const contextWeb = formatContext(relevantWebChunk);
+
+    if (contextDocs.length === 0 && contextWeb.length === 0) {
+      return res.json({
+        answer: "I couldn't find this in the uploaded sources.",
+        sources: { docs: [], web: [] },
+      });
+    }
+
+    const SYSTEM_PROMPT = `You are an AI assistant who must answer strictly and only from the provided context (uploaded PDFs and the indexed URLs). If the answer is not present in the context, reply exactly with: "I couldn't find this in the uploaded sources." Include page numbers or source URLs when available.
+
+CONTEXT_START
+PDF_DOCS:
+${JSON.stringify(contextDocs)}
+WEB_DOCS:
+${JSON.stringify(contextWeb)}
+CONTEXT_END`;
 
     const client = new OpenAI();
     const response = await client.chat.completions.create({
@@ -282,9 +310,31 @@ app.post("/api/chat/stream", async (req, res) => {
     console.log("📄 PDF Chunks (stream):", relevantChunk);
     console.log("🌍 Web Chunks (stream):", relevantWebChunk);
 
-    const SYSTEM_PROMPT = `You are an AI assistant. Prefer to answer using the provided context (uploaded PDFs and the indexed URLs). If the context does not contain the answer, you may still use your general knowledge, but clearly state when the information is not from the uploaded sources. Include page numbers or source URLs when available.\n\nRespond in clean, well-structured Markdown with clear headings, bullet lists, and fenced code blocks.\n\nContext:\n${JSON.stringify(
-      relevantChunk
-    )}\n${JSON.stringify(relevantWebChunk)}`;
+    const contextDocs = formatContext(relevantChunk);
+    const contextWeb = formatContext(relevantWebChunk);
+
+    if (contextDocs.length === 0 && contextWeb.length === 0) {
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
+      });
+      res.write(": connected\n\n");
+      const notFoundMsg = "I couldn't find this in the uploaded sources.";
+      res.write(`data: ${JSON.stringify({ token: notFoundMsg })}\n\n`);
+      res.write("data: [DONE]\n\n");
+      return res.end();
+    }
+
+    const SYSTEM_PROMPT = `You are an AI assistant who must answer strictly and only from the provided context (uploaded PDFs and the indexed URLs). If the answer is not present in the context, reply exactly with: "I couldn't find this in the uploaded sources." Include page numbers or source URLs when available.
+
+CONTEXT_START
+PDF_DOCS:
+${JSON.stringify(contextDocs)}
+WEB_DOCS:
+${JSON.stringify(contextWeb)}
+CONTEXT_END`;
 
     res.writeHead(200, {
       "Content-Type": "text/event-stream",

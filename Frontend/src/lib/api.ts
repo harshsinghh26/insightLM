@@ -1,4 +1,6 @@
-export const API_BASE = "https://insightlm.onrender.com";
+import "dotenv/config";
+
+export const API_BASE = process.env.API_BASE || "http://localhost:3000";
 
 export async function indexFile(file: File) {
   const formData = new FormData();
