@@ -10,6 +10,7 @@ import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/
 import { RecursiveUrlLoader } from "@langchain/community/document_loaders/web/recursive_url";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant";
+import { QdrantClient } from "@qdrant/js-client-rest";
 import OpenAI from "openai";
 import { Document } from "@langchain/core/documents";
 
@@ -191,6 +192,33 @@ app.post("/api/index/url", async (req, res) => {
   }
 });
 
+// Debug endpoints for Qdrant
+app.get("/api/debug/collections", async (req, res) => {
+  try {
+    const client = new QdrantClient({
+      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY,
+    });
+    const collections = await client.getCollections();
+    res.json(collections);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/debug/count/:collection", async (req, res) => {
+  try {
+    const client = new QdrantClient({
+      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY,
+    });
+    const count = await client.count(req.params.collection, { exact: true });
+    res.json(count);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post("/api/chat", async (req, res) => {
   try {
     const { query } = req.body || {};
@@ -211,7 +239,7 @@ app.post("/api/chat", async (req, res) => {
           collectionName: PDF_COLLECTION,
         }
       );
-      relevantChunk = await vectorStore.asRetriever({ k: 3 }).invoke(query);
+      relevantChunk = await vectorStore.asRetriever({ k: 10 }).invoke(query);
     } catch {}
 
     try {
@@ -224,7 +252,7 @@ app.post("/api/chat", async (req, res) => {
         }
       );
       relevantWebChunk = await vectorWebStore
-        .asRetriever({ k: 3 })
+        .asRetriever({ k: 10 })
         .invoke(query);
     } catch {}
 
@@ -290,7 +318,7 @@ app.post("/api/chat/stream", async (req, res) => {
           collectionName: PDF_COLLECTION,
         }
       );
-      relevantChunk = await vectorStore.asRetriever({ k: 3 }).invoke(query);
+      relevantChunk = await vectorStore.asRetriever({ k: 10 }).invoke(query);
     } catch {}
 
     try {
@@ -303,7 +331,7 @@ app.post("/api/chat/stream", async (req, res) => {
         }
       );
       relevantWebChunk = await vectorWebStore
-        .asRetriever({ k: 3 })
+        .asRetriever({ k: 10 })
         .invoke(query);
     } catch {}
 
