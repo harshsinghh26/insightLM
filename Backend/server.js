@@ -195,6 +195,15 @@ app.post("/api/index/url", async (req, res) => {
       splitDocs.push(...docs);
     }
 
+    // Guard clause: if no content extracted, return 400
+    if (splitDocs.length === 0) {
+      console.log("⚠️ No content extracted from URL:", url);
+      return res.status(400).json({
+        error: "No usable content extracted from the provided URL.",
+        url,
+      });
+    }
+
     // Add chunk index
     splitDocs = splitDocs.map((d, i) => {
       d.metadata.chunk = i;
