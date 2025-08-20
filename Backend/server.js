@@ -215,7 +215,10 @@ app.post("/api/chat", async (req, res) => {
         .invoke(query);
     } catch {}
 
-    const SYSTEM_PROMPT = `You are an AI assistant who must answer strictly and only from the provided context (uploaded PDFs and the indexed URLs). If the answer is not present in the context, reply exactly with: "I couldn't find this in the uploaded sources." Include page numbers or source URLs when available.\n\nRespond in clean, well-structured Markdown with clear headings, bullet lists, and fenced code blocks.\n\nContext:\n${JSON.stringify(
+    console.log("📄 PDF Chunks:", relevantChunk);
+    console.log("🌍 Web Chunks:", relevantWebChunk);
+
+    const SYSTEM_PROMPT = `You are an AI assistant. Prefer to answer using the provided context (uploaded PDFs and the indexed URLs). If the context does not contain the answer, you may still use your general knowledge, but clearly state when the information is not from the uploaded sources. Include page numbers or source URLs when available.\n\nRespond in clean, well-structured Markdown with clear headings, bullet lists, and fenced code blocks.\n\nContext:\n${JSON.stringify(
       relevantChunk
     )}\n${JSON.stringify(relevantWebChunk)}`;
 
@@ -276,7 +279,10 @@ app.post("/api/chat/stream", async (req, res) => {
         .invoke(query);
     } catch {}
 
-    const SYSTEM_PROMPT = `You are an AI assistant who must answer strictly and only from the provided context (uploaded PDFs and the indexed URLs). If the answer is not present in the context, reply exactly with: "I couldn't find this in the uploaded sources." Include page numbers or source URLs when available.\n\nRespond in clean, well-structured Markdown with clear headings, bullet lists, and fenced code blocks.\n\nContext:\n${JSON.stringify(
+    console.log("📄 PDF Chunks (stream):", relevantChunk);
+    console.log("🌍 Web Chunks (stream):", relevantWebChunk);
+
+    const SYSTEM_PROMPT = `You are an AI assistant. Prefer to answer using the provided context (uploaded PDFs and the indexed URLs). If the context does not contain the answer, you may still use your general knowledge, but clearly state when the information is not from the uploaded sources. Include page numbers or source URLs when available.\n\nRespond in clean, well-structured Markdown with clear headings, bullet lists, and fenced code blocks.\n\nContext:\n${JSON.stringify(
       relevantChunk
     )}\n${JSON.stringify(relevantWebChunk)}`;
 
