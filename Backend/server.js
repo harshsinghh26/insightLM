@@ -13,6 +13,7 @@ import { QdrantVectorStore } from "@langchain/qdrant";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import OpenAI from "openai";
 import { Document } from "@langchain/core/documents";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -175,23 +176,36 @@ app.post("/api/index/url", async (req, res) => {
       console.log("⚠️ No include keywords matched, keeping all docs.");
     }
 
-    const cleaned = filtered.slice(0, WEB_MAX_DOCS).map(
-      (d, i) =>
+    const textSplitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 1000,
+      chunkOverlap: 200,
+    });
+
+    let splitDocs = [];
+    for (const d of filtered.slice(0, WEB_MAX_DOCS)) {
+      const docs = await textSplitter.splitDocuments([
         new Document({
           pageContent: (d.pageContent || "").slice(0, WEB_MAX_CHARS_PER_DOC),
           metadata: {
             ...(d.metadata || {}),
             source_url: d.metadata?.source_url || url,
-            chunk: i,
           },
-        })
-    );
+        }),
+      ]);
+      splitDocs.push(...docs);
+    }
 
-    await upsertDocuments(WEB_COLLECTION, cleaned);
+    // Add chunk index
+    splitDocs = splitDocs.map((d, i) => {
+      d.metadata.chunk = i;
+      return d;
+    });
+
+    await upsertDocuments(WEB_COLLECTION, splitDocs);
 
     res.json({
       success: true,
-      count: cleaned.length,
+      count: splitDocs.length,
       collection: WEB_COLLECTION,
     });
   } catch (error) {
