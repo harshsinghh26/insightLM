@@ -54,6 +54,7 @@ async function upsertDocuments(collectionName, documents) {
   const embeddings = getEmbeddings();
   await QdrantVectorStore.fromDocuments(documents, embeddings, {
     url: process.env.QDRANT_URL,
+    apiKey: process.env.QDRANT_API_KEY,
     collectionName,
   });
 }
@@ -191,7 +192,11 @@ app.post("/api/chat", async (req, res) => {
     try {
       const vectorStore = await QdrantVectorStore.fromExistingCollection(
         embeddings,
-        { url: process.env.QDRANT_URL, collectionName: PDF_COLLECTION }
+        {
+          url: process.env.QDRANT_URL,
+          apiKey: process.env.QDRANT_API_KEY,
+          collectionName: PDF_COLLECTION,
+        }
       );
       relevantChunk = await vectorStore.asRetriever({ k: 3 }).invoke(query);
     } catch {}
@@ -199,7 +204,11 @@ app.post("/api/chat", async (req, res) => {
     try {
       const vectorWebStore = await QdrantVectorStore.fromExistingCollection(
         embeddings,
-        { url: process.env.QDRANT_URL, collectionName: WEB_COLLECTION }
+        {
+          url: process.env.QDRANT_URL,
+          apiKey: process.env.QDRANT_API_KEY,
+          collectionName: WEB_COLLECTION,
+        }
       );
       relevantWebChunk = await vectorWebStore
         .asRetriever({ k: 3 })
@@ -244,7 +253,11 @@ app.post("/api/chat/stream", async (req, res) => {
     try {
       const vectorStore = await QdrantVectorStore.fromExistingCollection(
         embeddings,
-        { url: process.env.QDRANT_URL, collectionName: PDF_COLLECTION }
+        {
+          url: process.env.QDRANT_URL,
+          apiKey: process.env.QDRANT_API_KEY,
+          collectionName: PDF_COLLECTION,
+        }
       );
       relevantChunk = await vectorStore.asRetriever({ k: 3 }).invoke(query);
     } catch {}
@@ -252,7 +265,11 @@ app.post("/api/chat/stream", async (req, res) => {
     try {
       const vectorWebStore = await QdrantVectorStore.fromExistingCollection(
         embeddings,
-        { url: process.env.QDRANT_URL, collectionName: WEB_COLLECTION }
+        {
+          url: process.env.QDRANT_URL,
+          apiKey: process.env.QDRANT_API_KEY,
+          collectionName: WEB_COLLECTION,
+        }
       );
       relevantWebChunk = await vectorWebStore
         .asRetriever({ k: 3 })
