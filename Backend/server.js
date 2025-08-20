@@ -17,7 +17,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const upload = multer({ dest: path.join(__dirname, "uploads") });
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+const upload = multer({ dest: uploadsDir });
 
 const PORT = process.env.PORT || 3001;
 const QDRANT_URL = process.env.QDRANT_URL || "http://localhost:6333";
@@ -35,6 +41,11 @@ const WEB_INCLUDE = (
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
+
+// Root route
+app.get("/", (req, res) => {
+  res.send("✅ InsightLM backend is running!");
+});
 
 const getEmbeddings = () =>
   new OpenAIEmbeddings({ model: "text-embedding-3-large" });
@@ -354,5 +365,5 @@ app.post("/api/summarize/stream", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Backend server listening on http://localhost:${PORT}`);
+  console.log(`✅ Backend server listening on port ${PORT}`);
 });
