@@ -32,7 +32,7 @@ const QDRANT_URL = process.env.QDRANT_URL || "http://localhost:6333";
 const PDF_COLLECTION = process.env.PDF_COLLECTION || "chaicode-collection";
 const WEB_COLLECTION = process.env.WEB_COLLECTION || "chaicode-collection-web";
 const WEB_MAX_DEPTH = parseInt(process.env.WEB_MAX_DEPTH || "1", 10);
-const WEB_MAX_DOCS = parseInt(process.env.WEB_MAX_DOCS || "20", 10);
+const WEB_MAX_DOCS = parseInt(process.env.WEB_MAX_DOCS || "50", 10);
 const WEB_MAX_CHARS_PER_DOC = parseInt(process.env.WEB_MAX_CHARS || "4000", 10);
 const WEB_INCLUDE = (
   process.env.WEB_INCLUDE || "install,download,jdk,setup,getting-started"
@@ -185,7 +185,7 @@ app.post("/api/index/url", async (req, res) => {
     for (const d of filtered.slice(0, WEB_MAX_DOCS)) {
       const docs = await textSplitter.splitDocuments([
         new Document({
-          pageContent: (d.pageContent || "").slice(0, WEB_MAX_CHARS_PER_DOC),
+          pageContent: d.pageContent || "",
           metadata: {
             ...(d.metadata || {}),
             source_url: d.metadata?.source_url || url,
@@ -200,6 +200,11 @@ app.post("/api/index/url", async (req, res) => {
       d.metadata.chunk = i;
       return d;
     });
+
+    console.log("✅ Saving chunks:", splitDocs.length);
+    if (splitDocs.length > 0) {
+      console.log("🔎 First chunk:", splitDocs[0].pageContent.slice(0, 200));
+    }
 
     await upsertDocuments(WEB_COLLECTION, splitDocs);
 
