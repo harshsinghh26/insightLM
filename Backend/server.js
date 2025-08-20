@@ -67,11 +67,20 @@ function formatContext(docs) {
 
 async function upsertDocuments(collectionName, documents) {
   const embeddings = getEmbeddings();
-  await QdrantVectorStore.fromDocuments(documents, embeddings, {
-    url: process.env.QDRANT_URL,
-    apiKey: process.env.QDRANT_API_KEY,
-    collectionName,
-  });
+
+  // Split into safe batches to avoid Qdrant payload limit
+  const BATCH_SIZE = 50;
+  for (let i = 0; i < documents.length; i += BATCH_SIZE) {
+    const batch = documents.slice(i, i + BATCH_SIZE);
+    console.log(
+      `📤 Uploading batch ${i / BATCH_SIZE + 1} (${batch.length} docs)`
+    );
+    await QdrantVectorStore.fromDocuments(batch, embeddings, {
+      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY,
+      collectionName,
+    });
+  }
 }
 
 app.get("/health", (req, res) => {
