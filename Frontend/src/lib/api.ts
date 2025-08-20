@@ -1,4 +1,4 @@
-export const API_BASE = (import.meta as any).env?.VITE_API_BASE || "https://insightlm.onrender.com";
+export const API_BASE = "https://insightlm.onrender.com";
 
 export async function indexFile(file: File) {
   const formData = new FormData();
@@ -95,5 +95,3 @@ export async function summarizeStream(text: string, onToken: (t: string) => void
     }
   }
 }
-
-
