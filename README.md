@@ -72,9 +72,11 @@ cd Frontend
 npm install
 npm run dev
 ```
+---
 
-##🖥️ Usage
-	- 1. Run the backend server (npm run dev inside Backend/).
-	- 2. Run the frontend client (npm run dev inside Frontend/).
-	- 3. Open your browser at http://localhost:5173 (Vite default).
-	- 4. Upload a PDF, paste text, or provide a website link to get insights.
+## 🖥️ Usage
+	- Run the backend server (npm run dev inside Backend/).
+	- Run the frontend client (npm run dev inside Frontend/).
+	- Open your browser at http://localhost:5173 (Vite default).
+	- Upload a PDF, paste text, or provide a website link to get insights.
+---
